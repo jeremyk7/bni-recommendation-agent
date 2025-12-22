@@ -1,102 +1,94 @@
-## 🧠 Ecom-Applicatiebeheer (The Sting AI Agent) Service
+# 🖼️ Visual Product Search Batch Processor
 
-Een AI-aangedreven Python- ADK-project dat automatisch productnamen en productomschrijvingen genereert op basis van:
-- productdata uit inRiver PIM,
-- visuele analyse van mode-afbeeldingen (via GPT-4o Vision of Vertex Gemini Vision),
-- uitgebreide system-prompt (docx-bestand)
-- vergelijkbare bestaande producten uit InRiver export (RAG-bestand met Excel).
-
-De output bestaat uit commerciële productnamen en productomschrijvingen, volledig afgestemd op de tone of voice van Costes Fashion en haar sub-brands.
+Nightly batch-applicatie die productafbeeldingen van InRiver verwerkt naar Vertex AI embeddings en opslaat in Firestore voor vector search.
 
 ---
 
 ## ⚙️ Functionaliteiten
 
-✅ Ophalen van entity data uit de inRiver API  
-✅ Automatische visuele analyse van kledingstukken (m.b.v. GPT-4o of Gemini)  
-✅ RAG-ondersteunde tekstgeneratie op basis van Excel met eerdere teksten  
-✅ Output direct terugschrijven naar inRiver  
-✅ Klaar voor automatische hosting via Google Cloud Run
-✅ CI/CD via GitHub → Google Cloud Build
+- **Batch Processing**: Verwerkt grote hoeveelheden producten in configureerbare batches.
+- **Incremental Updates**: Overslaat ongewijzigde producten door gebruik van SHA256 image hashing.
+- **Vision Embeddings**: Genereert 1408-dimensionale vectoren via Vertex AI Multimodal Embeddings (`multimodalembedding@001`).
+- **Firestore Integratie**: Slaat verwerkte data op in Firestore met collecties voor producten, voortgang en foutmeldingen.
+- **CLI Interface**: Eenvoudig aan te sturen via command-line arguments voor automatisering.
 
 ---
 
-## 📂 Projectstructuur
+## 🛠️ Gebruik (Lokaal)
 
-```plaintext
-├── adapters/                     # Koppelingen met verschillende LLM-providers
-│   ├── llm_openai.py             # OpenAI integratie
-│   ├── llm_vertex.py             # Vertex AI integratie
-│   └── llm_provider.py           # Abstractielaag voor meerdere LLMs
-│
-├── adk_app/                      # ADK-agent logica
-│   └── agent.py                  # Hoofd orchestrator-agent
-│
-├── agents/                       # Subagents
-│   ├── copy_subagent.py          # Genereert productnamen en -omschrijvingen
-│   └── vision_subagent.py        # Analyseert kledingafbeeldingen
-│
-├── prompts/
-│   └── Prompt_productomschrijvingen_costes_V2.docx   # System prompt richtlijnen
-│
-├── rag_data/
-│   └── InRiverExport2025online_items_Costes.xlsx     # RAG-bronbestand met voorbeeldteksten
-│
-├── tools/
-│   └── inriver_api.py            # API-adapter voor InRiver-data
-│
-├── app.py                        # Entry point van de applicatie
-├── requirements.txt              # Vereiste Python-pakketten
-├── Dockerfile                    # Voor containerisatie
-├── cloudbuild.yaml               # CI/CD-configuratie (Google Cloud Build)
-├── .gitignore                    # Sluit gevoelige/irrelevante bestanden uit
-├── .dockerignore                 # Sluit bestanden uit van Docker-build
-├── .env                          # Lokale ontwikkelomgeving variabelen
-└── venv/                         # Virtuele Python-omgeving (niet committen)
+### 1. Installatie
+Zorg voor een Python 3.10+ omgeving.
+```bash
+# Systeem dependencies
+pip install -r requirements.txt
+```
+
+### 2. Configuratie
+Maak een `.env` bestand aan met de volgende variabelen:
+```bash
+# InRiver
+IN_RIVER_BASE_URL=https://api-prod1a-euw.productmarketingcloud.com
+ECOM_INRIVER_API_KEY=your_inriver_key
+INRIVER_IMAGE_FIELD=MainImage
+
+# Google Cloud
+GOOGLE_CLOUD_PROJECT=your_project_id
+VERTEX_LOCATION=europe-west4
+FIRESTORE_PRODUCTS_COLLECTION=products
+FIRESTORE_PROGRESS_COLLECTION=batchProgress
+FIRESTORE_ERRORS_COLLECTION=processingErrors
+
+# Batch settings
+BATCH_SIZE=500
+```
+
+### 3. Uitvoeren
+Start het batch-proces handmatig:
+```bash
+python app.py --batch-size 500
+```
+Voor een test-run zonder data op te slaan:
+```bash
+python app.py --batch-size 10 --dry-run
 ```
 
 ---
 
-## 🚀 Uitvoeren in Google Cloud Run Service
+## 🚀 Deployment (Google Cloud Run Jobs)
 
-1. Ga naar **Google Cloud Console → Cloud Run → Services**  
-2. Selecteer de service: **`service-webhook-cf`**
-3. Stuur JSON-body incl. X-CF-Signature (Header) naar: https://service-webhook-cf-508826694512.europe-west1.run.app/webhook
-{
-  "StepName": "Asset Delivery",
-  "ProductCode": "395808-GRS-MEL"
-}
+Hoewel de `cloudbuild.yaml` momenteel nog een Cloud Run *Service* configureert, is dit project geoptimaliseerd om te draaien als een **Cloud Run Job**.
 
-4. Testen via [web adk] of via http://localhost:8080/webhook
+### Aanbevolen Deployment (Job):
+```bash
+gcloud run jobs deploy visual-search-batch \
+  --image gcr.io/your_project/ecom-visual-product-search \
+  --tasks 1 \
+  --max-retries 0 \
+  --region europe-west4
+```
 
----
-
-## 📊 Logs bekijken
-
-Ga naar: **Cloud Run → Services → service-webhook-cf → Logs**  
-
-Hier vind je:  
-- AI output JSON  
-- Geanalyseerde afbeeldingen  
-- Eventuele foutmeldingen (zoals ontbrekende afbeeldingen of API errors)  
+### Scannen via Cloud Scheduler:
+Configureer een nightly trigger voor de Cloud Run Job om het proces elke nacht automatisch te starten.
 
 ---
 
-## 🔐 Geheimen beheren
-
-- API-sleutels en andere gevoelige gegevens worden beheerd via **Google Secret Manager**.  
-- Deze worden beschikbaar gemaakt via **environment variables** en automatisch opgehaald in `config.py`.  
-
----
-
-## 👤 Auteur & Beheer
-
-- Ontwikkeld voor **Ecom-Applicatiebeheer** als intern AI-project  
-- Opgezet en beheerd door het **E-commerce Applicatiebeheer team**  
+## 📂 Projectstructuur
+- `app.py`: CLI entry point.
+- `batch_processor.py`: Hoofd orchestrator voor batch logica & incremental checks.
+- `inriver_client.py`: InRiver API adapter.
+- `vision_client.py`: Vertex AI Embedding generator.
+- `firestore_client.py`: Firestore database adapter.
+- `image_utils.py`: Hashing en download utilities.
 
 ---
 
-## 📄 Licentie
+## 📊 Monitoring
+Controleer de volgende Firestore collecties voor resultaten:
+- `products`: De verwerkte data incl. embeddings.
+- `processingErrors`: Logs van mislukte verwerkingen (bijv. corrupte afbeeldingen).
 
-Private repository – uitsluitend bedoeld voor intern gebruik bij The Sting Companies.  
-Niet bedoeld voor externe distributie of commercieel hergebruik.
+---
+
+## 👤 Beheer
+Ontwikkeld voor **Ecom-Applicatiebeheer**.
+Uitsluitend voor intern gebruik.
