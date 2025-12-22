@@ -7,4 +7,9 @@ uvicorn
 openai==1.99.9
 google-adk>=1.10.0
 litellm>=1.53
-python-docx==1.2.0
+python-docx
+google-cloud-vision>=3.7.0
+google-cloud-firestore>=2.14.0
+google-cloud-aiplatform>=1.38.0
+Pillow>=10.0.0
+google-auth==1.2.0
