@@ -136,10 +136,15 @@ def find_similar_items(query: str, tool_context=None) -> str:
         logger.info(f"✓ Found {len(results)} similar products")
         output = "Gevonden producten:\n\n"
         for idx, product in enumerate(results, 1):
-            names = product.get("ProductNameCommercial", {})
-            name = names.get("nl-NL") or names.get("en-GB") or "Naamloos Product"
+            # Resolve name from nested dictionary
+            names = product.get("name", {})
+            if isinstance(names, dict):
+                name = names.get("nl-NL") or names.get("en-GB") or "Naamloos Product"
+            else:
+                name = str(names) or "Naamloos Product"
+                
             entity_id = product.get("entity_id", "N/A")
-            image_url = product.get("MainImage", "Geen URL")
+            image_url = product.get("image_url", "Geen URL")
             output += f"{idx}. **{name}** (ID: {entity_id})\n"
             if image_url != "Geen URL":
                 output += f"   - [Bekijk Afbeelding]({image_url})\n"

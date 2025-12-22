@@ -18,7 +18,7 @@ def test_pipeline_one_product():
     
     # 2. Fetch Product from InRiver
     print("🔹 Fetching product from InRiver...")
-    products = inriver.get_products(start_index=0, limit=20) # Get a few to ensure we find one with an image
+    products = inriver.get_products(start_index=5, limit=20) # Get a few to ensure we find one with an image
     
     target_product = None
     target_image_url = None

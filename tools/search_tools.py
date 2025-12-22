@@ -1,4 +1,3 @@
-import math
 import google.cloud.firestore as firestore
 from google.cloud.firestore_v1.vector import Vector
 from google.cloud.firestore_v1.base_vector_query import DistanceMeasure
@@ -14,11 +13,6 @@ def search_similar_products(image_bytes: bytes, limit: int = 5) -> List[Dict[str
     config = get_config()
     vision = VisionEmbeddingGenerator()
     db_client = FirestoreClient()
-    
-    # 1. Generate Embedding from Bytes
-    # Note: VisionEmbeddingGenerator.get_embedding currently takes a URL
-    # I should update it or use the model directly here.
-    # Actually, let's update vision_client.py to support bytes.
     
     from vertexai.vision_models import Image
     import logging
@@ -53,14 +47,15 @@ def search_similar_products(image_bytes: bytes, limit: int = 5) -> List[Dict[str
     logger.info(f"Querying Firestore collection: {collection_name}")
     collection = db_client.db.collection(collection_name)
     
-    # Use find_nearest for vector search
-    # Requires a vector index on the 'embedding' field
+    threshold = 0.2 # Similarity > 80% (Distance < 0.2)
+    
     try:
         vector_query = collection.find_nearest(
             vector_field="embedding",
             query_vector=Vector(query_vector),
             distance_measure=DistanceMeasure.COSINE,
-            limit=limit
+            limit=limit,
+            distance_result_field="vector_distance"
         )
     except Exception as e:
         logger.error(f"Firestore vector query error: {e}")
@@ -69,40 +64,15 @@ def search_similar_products(image_bytes: bytes, limit: int = 5) -> List[Dict[str
     results = []
     for doc in vector_query.stream():
         data = doc.to_dict()
-        # Remove the large embedding vector from result for cleaner display
+        distance = data.get("vector_distance", 1.0)
+        
+        if distance > threshold:
+            logger.info(f"Skipping result {doc.id} due to distance {distance:.3f} > {threshold}")
+            continue
+            
         if "embedding" in data:
             del data["embedding"]
         results.append(data)
     
-    logger.info(f"✓ Found {len(results)} results from Firestore")
-    
-    # 3. Fallback: Manual Cosine Similarity Scan
-    if not results:
-        logger.info("Fallback: Performing in-memory similarity scan...")
-        all_docs = collection.limit(500).stream()
-        
-        candidates = []
-        for doc in all_docs:
-            data = doc.to_dict()
-            if "embedding" in data:
-                # Calculate cosine similarity
-                emb = data["embedding"]
-                
-                # Pure Python cosine similarity
-                dot_product = sum(a * b for a, b in zip(query_vector, emb))
-                norm_a = math.sqrt(sum(a * a for a in query_vector))
-                norm_b = math.sqrt(sum(b * b for b in emb))
-                
-                if norm_a > 0 and norm_b > 0:
-                    similarity = dot_product / (norm_a * norm_b)
-                    data["_similarity"] = similarity
-                    # Remove large embedding for output
-                    del data["embedding"]
-                    candidates.append(data)
-        
-        # Sort by similarity descending
-        candidates.sort(key=lambda x: x.get("_similarity", 0), reverse=True)
-        results = candidates[:limit]
-        logger.info(f"✓ Fallback found {len(results)} results via manual scan")
-
+    logger.info(f"✓ Found {len(results)} relevant results from Firestore")
     return results
