@@ -16,13 +16,14 @@ class BatchProcessor:
         
     def process_batch(self, start_index: int, limit: int) -> Dict[str, Any]:
         """
-        Processes a single batch of products.
+        Processes a single batch of Items.
+        Each Item may have multiple images; each image becomes a searchable document.
         """
         stats = {
             "batch_start": start_index,
-            "processed": 0,
+            "items_processed": 0,
+            "images_indexed": 0,
             "skipped": 0,
-            "updated": 0,
             "failed": 0
         }
         
@@ -31,7 +32,7 @@ class BatchProcessor:
         
         print(f"--- Processing Batch: start={start_index}, limit={limit} (Filter: {formula}, Year >= {min_year}) ---")
         
-        # 1. Fetch products from InRiver with filters
+        # 1. Fetch Items from InRiver with filters
         try:
             data_criteria = [
                 {
@@ -45,86 +46,98 @@ class BatchProcessor:
                     "operator": "GreaterThanOrEqual"
                 }
             ]
-            products = self.inriver.get_products(start_index, limit, data_criteria=data_criteria)
+            items = self.inriver.get_products(start_index, limit, data_criteria=data_criteria)
         except Exception as e:
             print(f"Failed to fetch batch from InRiver: {e}")
             stats["failed"] = limit
             return stats
 
-        if not products:
-            print("No products found in this range.")
+        if not items:
+            print("No items found in this range.")
             return stats
 
-        for product in products:
-            stats["processed"] += 1
-            entity_id = product.get("entity_id")
-            pmc_name = product.get("ProductNameCommercial")
+        for item in items:
+            stats["items_processed"] += 1
+            item_id = item.get("entity_id")
+            item_fields = item.get("item_fields", {})
+            product_fields = item.get("product_fields", {})
+            image_urls = item.get("image_urls", [])
             
-            # Use configured image field
-            image_field = self.config.get("INRIVER_IMAGE_FIELD", "MainImage")
-            image_url = product.get(image_field) or product.get("MainImage")
+            item_code = item_fields.get("ItemCode", "N/A")
+            # Resolve name from nested dictionary (Product Name)
+            names = product_fields.get("ProductNameCommercial", {})
+            if isinstance(names, dict):
+                p_name = names.get("nl-NL") or names.get("en-GB") or "Naamloos"
+            else:
+                p_name = str(names) or "Naamloos"
 
-            if not image_url:
-                print(f"[{entity_id}] Skip: No image URL found.")
+            if not image_urls:
+                print(f"[Item {item_id}] Skip: No image URLs found.")
                 stats["skipped"] += 1
                 continue
 
-            try:
-                # 2. Incremental check via Hash
-                # Download and hash immediately (we need it for skip check)
-                image_bytes = download_image(image_url)
-                if not image_bytes:
-                    raise ValueError(f"Could not download image from {image_url}")
-                
-                current_hash = calculate_image_hash(image_bytes)
-                
-                # Check Firestore
-                existing_doc = self.db.get_product(entity_id)
-                if existing_doc and existing_doc.get("image_hash") == current_hash:
-                    # Skip if hash matches
-                    print(f"[{entity_id}] Skip: Image hash unchanged ({current_hash[:8]}...)")
-                    stats["skipped"] += 1
-                    continue
+            print(f"[Item {item_id} | {item_code}] Processing {len(image_urls)} images for: {p_name}...")
 
-                # 3. Generate Embedding (if not dry run)
-                print(f"[{entity_id}] Processing: {pmc_name}...")
-                embedding = None
-                if not self.dry_run:
-                    embedding = self.vision.get_embedding(image_url)
-                    if not embedding:
-                        raise ValueError("Failed to generate embedding")
-                
-                # 4. Upsert to Firestore
-                if not self.dry_run:
-                    product_data = {
-                        "entity_id": entity_id,
-                        "name": pmc_name,
-                        "image_url": image_url,
-                        "image_hash": current_hash,
-                        "embedding": embedding,
-                        "last_updated": time.time()
-                    }
-                    self.db.upsert_product(product_data)
-                    stats["updated"] += 1
-                    print(f"[{entity_id}] ✅ Success.")
-                else:
-                    print(f"[{entity_id}] Dry-run: Embedding generated (simulated) and stored (simulated).")
-                    stats["updated"] += 1
+            for idx, image_url in enumerate(image_urls):
+                doc_id = f"item_{item_id}_{idx}"
+                try:
+                    # 2. Incremental check via Hash
+                    image_bytes = download_image(image_url)
+                    if not image_bytes:
+                        raise ValueError(f"Could not download image {idx} from {image_url}")
+                    
+                    current_hash = calculate_image_hash(image_bytes)
+                    
+                    # Check Firestore
+                    existing_doc = self.db.get_product(doc_id)
+                    if existing_doc and existing_doc.get("image_hash") == current_hash:
+                        # Skip if hash matches
+                        # print(f"  - Image {idx} hash unchanged.")
+                        stats["skipped"] += 1
+                        continue
 
-            except Exception as e:
-                print(f"[{entity_id}] ❌ Error: {e}")
-                stats["failed"] += 1
-                # Log error to Firestore
-                if not self.dry_run:
-                    error_doc = {
-                        "entity_id": entity_id,
-                        "error_message": str(e),
-                        "timestamp": time.time()
-                    }
-                    try:
-                        self.db.db.collection(self.config["FIRESTORE_ERRORS_COLLECTION"]).add(error_doc)
-                    except:
-                        pass # Ignore secondary errors during error logging
+                    # 3. Generate Embedding (if not dry run)
+                    embedding = None
+                    if not self.dry_run:
+                        embedding = self.vision.get_embedding(image_url)
+                        if not embedding:
+                            raise ValueError(f"Failed to generate embedding for image {idx}")
+                    
+                    # 4. Upsert to Firestore
+                    if not self.dry_run:
+                        product_data = {
+                            "doc_id": doc_id,
+                            "item_id": item_id,
+                            "item_code": item_code,
+                            "name": names, # Store full dict
+                            "image_url": image_url,
+                            "image_hash": current_hash,
+                            "embedding": embedding,
+                            "last_updated": time.time(),
+                            "parent_product_id": product_fields.get("product_entity_id")
+                        }
+                        self.db.upsert_product(product_data)
+                        stats["images_indexed"] += 1
+                    else:
+                        print(f"  - Dry-run: Image {idx} processed (simulated).")
+                        stats["images_indexed"] += 1
+
+                except Exception as e:
+                    print(f"  - [Image {idx}] ❌ Error: {e}")
+                    stats["failed"] += 1
+                    # Log error
+                    if not self.dry_run:
+                        error_doc = {
+                            "doc_id": doc_id,
+                            "item_id": item_id,
+                            "item_code": item_code,
+                            "error_message": str(e),
+                            "timestamp": time.time()
+                        }
+                        try:
+                            self.db.db.collection(self.config["FIRESTORE_ERRORS_COLLECTION"]).add(error_doc)
+                        except:
+                            pass
 
         return stats
 
@@ -136,8 +149,8 @@ class BatchProcessor:
         processed_so_far = 0
         
         overall_stats = {
-            "total_processed": 0,
-            "total_updated": 0,
+            "total_items_processed": 0,
+            "total_images_indexed": 0,
             "total_skipped": 0,
             "total_failed": 0,
             "start_time": time.time()
@@ -147,14 +160,14 @@ class BatchProcessor:
             current_batch_limit = min(batch_size, total_limit - processed_so_far)
             batch_stats = self.process_batch(processed_so_far, current_batch_limit)
             
-            overall_stats["total_processed"] += batch_stats["processed"]
-            overall_stats["total_updated"] += batch_stats["updated"]
+            overall_stats["total_items_processed"] += batch_stats["items_processed"]
+            overall_stats["total_images_indexed"] += batch_stats["images_indexed"]
             overall_stats["total_skipped"] += batch_stats["skipped"]
             overall_stats["total_failed"] += batch_stats["failed"]
             
             processed_so_far += current_batch_limit
-            if batch_stats["processed"] < current_batch_limit:
-                # No more products
+            if batch_stats["items_processed"] < current_batch_limit:
+                # No more items
                 break
         
         overall_stats["end_time"] = time.time()
@@ -163,10 +176,10 @@ class BatchProcessor:
         print("\n" + "="*30)
         print("BATCH PROCESSING COMPLETE")
         print(f"Duration: {duration:.2f}s")
-        print(f"Processed: {overall_stats['total_processed']}")
-        print(f"Updated:   {overall_stats['total_updated']}")
-        print(f"Skipped:   {overall_stats['total_skipped']}")
-        print(f"Failed:    {overall_stats['total_failed']}")
+        print(f"Items Processed: {overall_stats['total_items_processed']}")
+        print(f"Images Indexed:  {overall_stats['total_images_indexed']}")
+        print(f"Skipped:         {overall_stats['total_skipped']}")
+        print(f"Failed:          {overall_stats['total_failed']}")
         print("="*30)
         
         return overall_stats

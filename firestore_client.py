@@ -27,12 +27,12 @@ class FirestoreClient:
     def upsert_product(self, product_data: Dict[str, Any]) -> None:
         """
         Upserts (creates or updates) a product document.
-        product_data must contain 'entity_id' or 'id' to be used as document key.
+        product_data must contain 'doc_id', 'entity_id' or 'id' to be used as document key.
         """
-        # Use entity_id as key
-        p_id = product_data.get('entity_id') or product_data.get('id')
+        # Use doc_id, entity_id or id as key
+        p_id = product_data.get('doc_id') or product_data.get('entity_id') or product_data.get('id')
         if not p_id:
-            raise ValueError("Product data must contain 'entity_id' or 'id'")
+            raise ValueError("Product data must contain 'doc_id', 'entity_id' or 'id'")
             
         doc_ref = self.db.collection(self.products_collection).document(str(p_id))
         

@@ -135,19 +135,24 @@ def find_similar_items(query: str, tool_context=None) -> str:
             
         logger.info(f"✓ Found {len(results)} similar products")
         output = "Gevonden producten:\n\n"
-        for idx, product in enumerate(results, 1):
+        for idx, item in enumerate(results, 1):
             # Resolve name from nested dictionary
-            names = product.get("name", {})
+            names = item.get("name", {})
             if isinstance(names, dict):
                 name = names.get("nl-NL") or names.get("en-GB") or "Naamloos Product"
             else:
                 name = str(names) or "Naamloos Product"
                 
-            entity_id = product.get("entity_id", "N/A")
-            image_url = product.get("image_url", "Geen URL")
-            output += f"{idx}. **{name}** (ID: {entity_id})\n"
+            item_code = item.get("item_code", "N/A")
+            item_id = item.get("item_id", "N/A")
+            image_url = item.get("image_url", "Geen URL")
+            
+            output += f"{idx}. **{name}**\n"
+            output += f"   - **Item Code**: {item_code}\n"
+            output += f"   - **Entity ID**: {item_id}\n"
             if image_url != "Geen URL":
-                output += f"   - [Bekijk Afbeelding]({image_url})\n"
+                # Create a clickable thumbnail
+                output += f"   - [![Product Afbeelding]({image_url})]({image_url})\n"
         
         return output
         
@@ -158,12 +163,13 @@ def find_similar_items(query: str, tool_context=None) -> str:
 # Configure Agent
 visual_search_agent = LlmAgent(
     name="visual_search_agent",
-    model=Gemini(model="gemini-2.5-flash"),
+    model=Gemini(model="gemini-2.0-flash"),
     description="Finds similar products based on uploaded images.",
     instruction=(
-        "You are a Visual Search assistant for The Sting. When a user uploads an image, "
-        "always use the 'find_similar_items' tool to find the closest matches in our Firestore database. "
-        "Explain that you are searching based on visual characteristics."
+        "Je bent een Visuele Zoekassistent voor The Sting. Wanneer een gebruiker een afbeelding uploadt, "
+        "gebruik dan altijd de tool 'find_similar_items' om de beste matches in onze Firestore-database te vinden. "
+        "Leg uit dat je zoekt op basis van visuele kenmerken. "
+        "Reageer altijd volledig in het Nederlands."
     ),
     tools=[find_similar_items]
 )
