@@ -126,8 +126,8 @@ def find_similar_items(query: str, tool_context=None) -> str:
         
         logger.info(f"✓ Image ready ({len(image_bytes)} bytes). Starting Firestore search...")
         
-        # Perform Vector Search
-        results = search_similar_products(image_bytes, limit=5)
+        # Perform Vector Search with query context
+        results = search_similar_products(image_bytes, query=query, limit=5)
         
         if not results:
             logger.info("No similar products found in Firestore")
@@ -147,7 +147,11 @@ def find_similar_items(query: str, tool_context=None) -> str:
             item_id = item.get("item_id", "N/A")
             image_url = item.get("image_url", "Geen URL")
             
-            output += f"**{name}**\n"
+            # Calculate confidence percentage (1.0 distance = 0%, 0.0 distance = 100%)
+            distance = item.get("vector_distance", 0.5)
+            confidence = max(0, min(100, (1.0 - distance) * 100))
+            
+            output += f"**{name}** (Match: {confidence:.1f}%)\n"
             output += f"Itemcode: {item_code}\n"
             output += f"Entity ID: {item_id}\n"
             if image_url != "Geen URL":

@@ -6,9 +6,10 @@ from vision_client import VisionEmbeddingGenerator
 from firestore_client import FirestoreClient
 from app_config import get_config
 
-def search_similar_products(image_bytes: bytes, limit: int = 5) -> List[Dict[str, Any]]:
+def search_similar_products(image_bytes: bytes, query: str = None, limit: int = 5) -> List[Dict[str, Any]]:
     """
-    Takes image bytes, generates an embedding, and finds the nearest matches in Firestore.
+    Takes image bytes, generates an embedding (optionally guided by a query), 
+    and finds the nearest matches in Firestore.
     """
     config = get_config()
     vision = VisionEmbeddingGenerator()
@@ -18,7 +19,7 @@ def search_similar_products(image_bytes: bytes, limit: int = 5) -> List[Dict[str
     import logging
     logger = logging.getLogger("search_tools")
     
-    logger.info(f"Generating embedding for {len(image_bytes)} bytes of type {type(image_bytes)}...")
+    logger.info(f"Generating embedding for {len(image_bytes)} bytes (Query context: '{query}')...")
     
     try:
         image = Image(image_bytes)
@@ -27,8 +28,10 @@ def search_similar_products(image_bytes: bytes, limit: int = 5) -> List[Dict[str
         raise ValueError(f"Could not create Vertex AI Image from bytes: {e}")
     
     try:
+        # Pass the user query to contextual_text to help the model focus on the right object
         embeddings = vision.model.get_embeddings(
             image=image,
+            contextual_text=query,
             dimension=1408
         )
     except Exception as e:
@@ -47,7 +50,7 @@ def search_similar_products(image_bytes: bytes, limit: int = 5) -> List[Dict[str
     logger.info(f"Querying Firestore collection: {collection_name}")
     collection = db_client.db.collection(collection_name)
     
-    threshold = 0.2 # Similarity > 80% (Distance < 0.2)
+    threshold = 0.6 # Similarity > 40% (Distance < 0.6) - Increased to 0.6 to support very noisy screenshots or distant matches
     
     try:
         vector_query = collection.find_nearest(
@@ -70,6 +73,10 @@ def search_similar_products(image_bytes: bytes, limit: int = 5) -> List[Dict[str
             logger.info(f"Skipping result {doc.id} due to distance {distance:.3f} > {threshold}")
             continue
             
+        # Add metadata to result
+        data["doc_id"] = doc.id
+        # distance is already in data because of distance_result_field="vector_distance"
+        
         if "embedding" in data:
             del data["embedding"]
         results.append(data)

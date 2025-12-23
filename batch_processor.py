@@ -1,5 +1,5 @@
 import time
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from inriver_client import InRiverClient
 from vision_client import VisionEmbeddingGenerator
 from firestore_client import FirestoreClient
@@ -14,7 +14,7 @@ class BatchProcessor:
         self.db = FirestoreClient()
         self.dry_run = dry_run
         
-    def process_batch(self, start_index: int, limit: int) -> Dict[str, Any]:
+    def process_batch(self, start_index: int, limit: int, item_code: Optional[str] = None) -> Dict[str, Any]:
         """
         Processes a single batch of Items.
         Each Item may have multiple images; each image becomes a searchable document.
@@ -30,22 +30,32 @@ class BatchProcessor:
         formula = self.config.get("INRIVER_FILTER_FORMULA", "C")
         min_year = self.config.get("INRIVER_FILTER_MIN_YEAR", 2025)
         
-        print(f"--- Processing Batch: start={start_index}, limit={limit} (Filter: {formula}, Year >= {min_year}) ---")
+        filter_desc = f"ItemCode: {item_code}" if item_code else f"Filter: {formula}, Year >= {min_year}"
+        print(f"--- Processing Batch: start={start_index}, limit={limit} ({filter_desc}) ---")
         
         # 1. Fetch Items from InRiver with filters
         try:
-            data_criteria = [
-                {
-                    "fieldTypeId": "ItemBusinessFormula",
-                    "value": formula,
-                    "operator": "Equal"
-                },
-                {
-                    "fieldTypeId": "ItemSeasonYear",
-                    "value": min_year,
-                    "operator": "GreaterThanOrEqual"
-                }
-            ]
+            if item_code:
+                data_criteria = [
+                    {
+                        "fieldTypeId": "ItemCode",
+                        "value": item_code,
+                        "operator": "Equal"
+                    }
+                ]
+            else:
+                data_criteria = [
+                    {
+                        "fieldTypeId": "ItemBusinessFormula",
+                        "value": formula,
+                        "operator": "Equal"
+                    },
+                    {
+                        "fieldTypeId": "ItemSeasonYear",
+                        "value": min_year,
+                        "operator": "GreaterThanOrEqual"
+                    }
+                ]
             items = self.inriver.get_products(start_index, limit, data_criteria=data_criteria)
         except Exception as e:
             print(f"Failed to fetch batch from InRiver: {e}")
@@ -147,7 +157,7 @@ class BatchProcessor:
 
         return stats
 
-    def run(self, total_limit: int = 500):
+    def run(self, total_limit: int = 500, item_code: Optional[str] = None):
         """
         Runs the full batch process up to total_limit.
         """
@@ -164,7 +174,7 @@ class BatchProcessor:
 
         while processed_so_far < total_limit:
             current_batch_limit = min(batch_size, total_limit - processed_so_far)
-            batch_stats = self.process_batch(processed_so_far, current_batch_limit)
+            batch_stats = self.process_batch(processed_so_far, current_batch_limit, item_code=item_code)
             
             overall_stats["total_items_processed"] += batch_stats["items_processed"]
             overall_stats["total_images_indexed"] += batch_stats["images_indexed"]
