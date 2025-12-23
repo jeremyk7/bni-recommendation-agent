@@ -134,8 +134,8 @@ def find_similar_items(query: str, tool_context=None) -> str:
             return "Geen vergelijkbare producten gevonden in de database."
             
         logger.info(f"✓ Found {len(results)} similar products")
-        output = "Gevonden producten:\n\n"
-        for idx, item in enumerate(results, 1):
+        output = "We hebben het volgende item gevonden dat overeenkomt met je geüploade afbeelding:\n\n"
+        for item in results:
             # Resolve name from nested dictionary
             names = item.get("name", {})
             if isinstance(names, dict):
@@ -147,13 +147,15 @@ def find_similar_items(query: str, tool_context=None) -> str:
             item_id = item.get("item_id", "N/A")
             image_url = item.get("image_url", "Geen URL")
             
-            output += f"{idx}. **{name}**\n"
-            output += f"   - **Item Code**: {item_code}\n"
-            output += f"   - **Entity ID**: {item_id}\n"
+            output += f"**{name}**\n"
+            output += f"Itemcode: {item_code}\n"
+            output += f"Entity ID: {item_id}\n"
             if image_url != "Geen URL":
-                # Create a clickable thumbnail
-                output += f"   - [![Product Afbeelding]({image_url})]({image_url})\n"
+                output += f"[Bekijk Afbeelding]({image_url})\n\n"
+            else:
+                output += "\n"
         
+        output += "Laat het me weten als je nog iets anders wilt zien!"
         return output
         
     except Exception as e:
@@ -168,8 +170,8 @@ visual_search_agent = LlmAgent(
     instruction=(
         "Je bent een Visuele Zoekassistent voor The Sting. Wanneer een gebruiker een afbeelding uploadt, "
         "gebruik dan altijd de tool 'find_similar_items' om de beste matches in onze Firestore-database te vinden. "
-        "Leg uit dat je zoekt op basis van visuele kenmerken. "
-        "Reageer altijd volledig in het Nederlands."
+        "Reageer altijd VOLLEDIG in het Nederlands. Gebruik de specifieke output van de tool en voeg zelf "
+        "geen extra Engelse tekst toe."
     ),
     tools=[find_similar_items]
 )
