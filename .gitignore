@@ -24,6 +24,5 @@ venv/
 .vscode/
 .idea/
 
-# Test en debug bestanden
+# Debug bestanden
 debug_*.py
-test_*.py
