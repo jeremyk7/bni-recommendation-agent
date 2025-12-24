@@ -6,14 +6,25 @@ from vision_client import VisionEmbeddingGenerator
 from firestore_client import FirestoreClient
 from app_config import get_config
 
+# Persistent clients initialized once at module level to save latency
+_VISION_CLIENT = None
+_DB_CLIENT = None
+
+def _get_clients():
+    global _VISION_CLIENT, _DB_CLIENT
+    if _VISION_CLIENT is None:
+        _VISION_CLIENT = VisionEmbeddingGenerator()
+    if _DB_CLIENT is None:
+        _DB_CLIENT = FirestoreClient()
+    return _VISION_CLIENT, _DB_CLIENT
+
 def search_similar_products(image_bytes: bytes, query: str = None, limit: int = 5) -> List[Dict[str, Any]]:
     """
     Takes image bytes, generates an embedding (optionally guided by a query), 
     and finds the nearest matches in Firestore.
     """
     config = get_config()
-    vision = VisionEmbeddingGenerator()
-    db_client = FirestoreClient()
+    vision, db_client = _get_clients()
     
     from vertexai.vision_models import Image
     import logging

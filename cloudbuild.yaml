@@ -31,6 +31,9 @@ steps:
     - --platform=managed
     - --allow-unauthenticated
     - --port=8080
+    - --cpu=4
+    - --memory=4Gi
+    - --startup-boost
     - --set-env-vars
     - "GOOGLE_CLOUD_PROJECT=ecom-agents,VERTEX_LOCATION=europe-west4,INRIVER_FILTER_FORMULA=Year gte 2024,INRIVER_FILTER_MIN_YEAR=2024,INRIVER_IMAGE_FIELD=MainImage,BATCH_SIZE=500,FIRESTORE_PRODUCTS_COLLECTION=productscostes,FIRESTORE_PROGRESS_COLLECTION=batchProgress,FIRESTORE_ERRORS_COLLECTION=processingErrors"
 
