@@ -54,7 +54,7 @@ python app.py --batch-size 10 --dry-run
 
 ---
 
-## 🚀 Deployment (Google Cloud Run Jobs)
+## 🚀 Deployment (Google Cloud Run Jobs) 
 
 Hoewel de `cloudbuild.yaml` momenteel nog een Cloud Run *Service* configureert, is dit project geoptimaliseerd om te draaien als een **Cloud Run Job**.
 
