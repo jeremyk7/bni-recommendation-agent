@@ -1,4 +1,4 @@
-FROM python:3.10-slim
+FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -6,10 +6,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# System build tools voor C/C++ extensions (madoka)
+# Alleen essentiële build tools (indien nodig voor madoka/C extensions)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      build-essential \
-      python3-dev \
+    build-essential \
     && rm -rf /var/lib/apt/lists/*
 
 RUN python -m pip install --upgrade pip
