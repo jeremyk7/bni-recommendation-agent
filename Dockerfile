@@ -1,27 +1,26 @@
 FROM python:3.11-slim-bookworm
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    PORT=8080
 
 WORKDIR /app
 
-# Alleen essentiële build tools installeren als het echt nodig is
-# We slaan apt-get update over als we geen extra packages nodig hebben
-# maar voor sommige python libraries (Pillow etc) is zlib-dev handig.
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+# We doen GEEN apt-get update meer om tijd te besparen. 
+# De meeste moderne python wheels hebben geen build-essential nodig.
+# Indien er een 'missing library' error komt bij het booten, voegen we die gericht toe.
 
-# Pip upgraden
+# Pip upgraden (verplicht voor moderne wheels)
 RUN python -m pip install --no-cache-dir --upgrade pip
 
-# Dependencies kopiëren en installeren met de nieuwe 'Safe requirements'
+# Eerst requirements kopiëren voor optimale caching
 COPY requirements.txt ./
+
+# Pip installeren met de 'Total Lock' lijst (stopt alle backtracking)
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Applicatie kopiëren
 COPY . .
 
-# Poort en start-commando
-EXPOSE 8080
+# Startcommando
 CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-w", "2", "--timeout", "600", "--bind", ":8080", "app:app"]
