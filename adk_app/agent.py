@@ -155,7 +155,7 @@ def find_similar_items(query: str, tool_context=None) -> str:
             output += f"Itemcode: {item_code}\n"
             output += f"Entity ID: {item_id}\n"
             if image_url != "Geen URL":
-                output += f"[Bekijk Afbeelding]({image_url})\n\n"
+                output += f'<a href="{image_url}" target="_blank"><img src="{image_url}" width="250" alt="{name}"></a>\n\n'
             else:
                 output += "\n"
         
