@@ -98,8 +98,11 @@ def detect_clothing_items(image_bytes: bytes) -> List[Dict]:
         
         prompt = """
         Detecteer alle afzonderlijke kledingstukken en modeaccessoires in deze afbeelding.
+        Focus vooral op de hoofdkledingstukken (bovenkleding, onderkleding, schoenen).
+        Maak een duidelijk onderscheid tussen items die bij elkaar horen (bijv. een blazer en een bijbehorende short).
+        
         Geef de resultaten terug als een JSON-lijst van objecten, elk met:
-        - "label": een korte Nederlandse naam voor het item (bijv. "blouse", "trui", "broek", "rok", "schoenen")
+        - "label": een korte Nederlandse naam voor het item (bijv. "blouse", "trui", "broek", "rok", "schoenen", "blazer")
         - "box_2d": [ymin, xmin, ymax, xmax] in genormaliseerde coördinaten (0-1000)
         - "description": een korte beschrijving in het Nederlands, inclusief kleur en stijl
         

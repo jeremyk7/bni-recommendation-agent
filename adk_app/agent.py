@@ -157,8 +157,12 @@ def find_similar_items(query: str, tool_context=None) -> str:
                             "trui": ["sweater", "pullover", "knitwear", "trui", "vest"],
                             "rok": ["skirt", "rok"],
                             "broek": ["pants", "trousers", "jeans", "broek", "shorts"],
-                            "blouse": ["blouse", "shirt", "top"],
-                            "schoenen": ["shoes", "boots", "laarzen", "schoenen", "sneakers"]
+                            "blouse": ["blouse", "shirt", "top", "hemd"],
+                            "schoenen": ["shoes", "boots", "laarzen", "schoenen", "sneakers"],
+                            "blazer": ["blazer", "jasje", "colbert", "jack", "jacket"],
+                            "tas": ["bag", "tas", "handtas", "rugzak"],
+                            "ketting": ["necklace", "ketting", "halsketting"],
+                            "armband": ["bracelet", "armband"]
                         }
                         
                         for item in detected_items:
@@ -188,11 +192,11 @@ def find_similar_items(query: str, tool_context=None) -> str:
                                 break
                     
                     if not matched_item:
-                        # Return clarification message
+                        # Return clarification message with all detected items (including accessories)
                         item_list = "\n".join([f"- **{item['label']}** ({item['description']})" for item in detected_items])
                         logger.info("No clear match found, asking for clarification.")
                         return (
-                            f"Ik zie meerdere kledingstukken op deze afbeelding:\n{item_list}\n\n"
+                            f"Ik zie meerdere items op deze afbeelding:\n{item_list}\n\n"
                             "Om je de beste resultaten te geven: **welk van deze items wil je dat ik zoek?**"
                         )
                     else:
@@ -258,7 +262,7 @@ visual_search_agent = LlmAgent(
     description="Finds similar products based on uploaded images.",
     instruction=(
         "Je bent een Visuele Zoekassistent voor The Sting. Wanneer een gebruiker een afbeelding uploadt: "
-        "1. De tool 'find_similar_items' detecteert automatisch alle kledingstukken. "
+        "1. De tool 'find_similar_items' detecteert automatisch alle kledingstukken en accessoires. "
         "2. Als er meerdere items zijn en de gebruiker heeft niet specifiek aangegeven wat ze zoeken, "
         "zal de tool je vragen om verduidelijking. "
         "3. Zodra het item duidelijk is, wordt de afbeelding bijgesneden om tekst/knoppen te verwijderen "
