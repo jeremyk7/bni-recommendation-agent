@@ -33,7 +33,7 @@ class VertexClient(_original_client):
     def __init__(self, *args, **kwargs):
         if not kwargs.get("api_key"):
             kwargs["vertexai"] = True
-            kwargs["project"] = kwargs.get("project") or os.getenv("GOOGLE_CLOUD_PROJECT") or "ecom-agents"
+            kwargs["project"] = kwargs.get("project") or os.getenv("GOOGLE_CLOUD_PROJECT") or "bni-oostzaan"
             kwargs["location"] = kwargs.get("location") or os.getenv("VERTEX_LOCATION") or "europe-west1"
         super().__init__(*args, **kwargs)
 

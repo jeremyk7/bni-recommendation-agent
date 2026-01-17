@@ -11,7 +11,7 @@ def get_config():
     config = {}
     
     # GCP Config
-    config["GOOGLE_CLOUD_PROJECT"] = os.getenv("GOOGLE_CLOUD_PROJECT") or "ecom-agents"
+    config["GOOGLE_CLOUD_PROJECT"] = os.getenv("GOOGLE_CLOUD_PROJECT") or "bni-oostzaan"
     config["VERTEX_LOCATION"] = os.getenv("VERTEX_LOCATION", "europe-west1")
     
     # Vinted Search URL (Optional override)
