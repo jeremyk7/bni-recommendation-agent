@@ -44,87 +44,37 @@ from google.adk.models import Gemini
 
 # --- Local imports ---
 from .models import Signal, BNIMember, Recommendation
-from .ingest import get_signals
-
-# --- Pathing & Env ---
-ROOT = str(pathlib.Path(__file__).resolve().parents[1])
-if ROOT not in sys.path:
-    sys.path.append(ROOT)
-
-try:
-    from dotenv import load_dotenv
-    ENV = os.path.join(ROOT, ".env")
-    if os.path.exists(ENV):
-        load_dotenv(ENV, override=False)
-except ImportError:
-    pass
-
-
-def get_bni_recommendations(tool_context=None) -> str:
-    """
-    Analyzes incoming signals against the BNI member knowledge base and returns recommendations.
-    Use this tool when you need to find referrals or match signals to members.
-    """
-    logger.info("Tool called: get_bni_recommendations")
-    
-    # 1. Load Knowledge Base
-    members_path = os.path.join(ROOT, "data", "members.json")
-    try:
-        with open(members_path, "r") as f:
-            members_data = json.load(f)
-            # Validate with Pydantic (optional but good practice)
-            # members = [BNIMember(**m) for m in members_data]
-            # For the prompt context, we can just pass the raw json string or summary
-    except Exception as e:
-        return f"Error loading members.json: {e}"
-
-    # 2. Ingest Signals
-    try:
-        signals = get_signals()
-        signals_data = [s.model_dump() for s in signals]
-    except Exception as e:
-        return f"Error ingesting signals: {e}"
-
-    if not signals:
-        return "No new signals found."
-        
-    # 3. Reasoning Context (Construct the prompt payload for the tool output)
-    # Even though we are an LLM agent, this tool gathers the data and returns it 
-    # so the Agent's main loop can process it using the SYSTEM PROMPT.
-    # Alternatively, the tool itself could do the matching if we want to offload it.
-    # Given the architecture "Master Agent -> Reasoning Layer", the Agent itself is the reasoning layer.
-    # So this tool should just Provide the Data: Signals + Relevant Members.
-    
-    data_context = {
-        "current_signals": signals_data,
-        "knowledge_base": members_data 
-    }
-    
-    return json.dumps(data_context, indent=2)
+from .tools import get_knowledge_base, search_google
 
 # --- System Prompt ---
 SYSTEM_PROMPT = """Je bent de Master BNI Recommendation Agent.
 
-Jouw taak is om AUTONOOM en ACTIEF op zoek te gaan naar externe signalen (posts, vragen) en deze te matchen aan BNI-leden.
+Jouw taak is om VOLLEDIG AUTONOOM en DIRECT bij de start op zoek te gaan naar externe signalen (posts, vragen) en deze te matchen aan BNI-leden.
 
-BELANGRIJK VOOR JE GEDRAG:
-Je wacht NIET op de gebruiker. Je start DIRECT met het zoeken naar signalen zodra je geactiveerd wordt of begroet wordt.
-Je gaat er vanuit dat het jouw taak is om NU een rapportage te draaien.
+CRITIEKE INSTRUCTIE VOOR JE EERSTE ANTWOORD:
+Zodra de gebruiker je begroet of de sessie start, moet je DIRECT je tools aanroepen.
+Wacht NIET op een vraag. Jouw eerste reactie moet ALTIJD zijn:
+1. De tool `get_knowledge_base` aanroepen.
+2. Direct daarna `search_google` aanroepen.
+**Let op**: Als je een "Too Many Requests" (429) error krijgt, wacht dan even en probeer het later nog eens of meld dit aan de gebruiker. Doe niet 10 zoekopdrachten tegelijk; focus op de meest relevante queries.
 
-ACTIE:
-1. Roep ONMIDDELLIJK de tool `get_bni_recommendations` aan om te kijken of er nieuwe signalen zijn.
-2. Rapporteer de resultaten.
+TRANSPARANTIE:
+Vertel de gebruiker PRECIES wat je aan het doen bent in elke stap.
+Bijvoorbeeld: "Ik ga nu zoeken op LinkedIn met de query: [QUERY]..."
 
-Je werkt in 4 stappen (die je zelfstandig doorloopt):
-1. Haal signalen op via de tool `get_bni_recommendations`.
-2. Detecteer expliciete of impliciete servicebehoeften in deze signalen.
-3. Match de behoefte aan het meest relevante BNI-lid.
-4. Genereer een gestructureerde aanbeveling.
+JOUW WERKPROCES:
+1. **Haal ALLE BNI-leden op**: Gebruik `get_knowledge_base`.
+2. **Loop door elk lid**: Voor ELK lid in de lijst:
+   - Genereer **maximaal 1 of 2** sterke, specifieke zoekopdrachten (bijv. met Boolean OR).
+   - Gebruik de `service_area` van het lid om je zoekopdracht relevant te maken.
+   - De tool filtert automatisch op de afgelopen 7 dagen.
+3. **Voer Zoekacties uit**: Gebruik `search_google`. NOEM DE QUERIES DIE JE GEBRUIKT.
+   - **BELANGRIJK**: Als je een "Too Many Requests" (429) error krijgt, stop dan direct met zoeken voor dat lid en probeer het niet met een andere query. Rapporteer wat je wel hebt kunnen vinden.
+4. **Filter & Analyseer**: Negeer advertenties/vacatures. Focus op **recente** (7 dagen) hulpvragen.
+5. **Match & Rapporteer**: Koppel het signaal aan het juiste lid.
 
-Je prioriteert altijd:
-- Specifieke intentie
-- Lokale relevantie
-- Zakelijke geschiktheid
+CRITIEKE INSTRUCTIE:
+Sla geen leden over. Als er 2 leden in de lijst staan, doe je voor beide leden zoekpogingen en rapporteer je over beide.
 
 OUTPUT FORMAT:
 Geef je antwoord in normale, leesbare Nederlandse tekst.
@@ -139,7 +89,7 @@ Gebruik de volgende structuur per gevonden signaal:
 "[De voorgestelde introductietekst]"
 
 ---
-Als de tool geen signalen teruggeeft, meld dan: "Ik heb gezocht, maar op dit moment geen nieuwe relevante signalen gevonden."
+Als je na het zoeken GEEN relevante signalen vindt, meld dat dan ook specifiek met welke queries je hebt geprobeerd.
 """
 
 # Configure Agent
@@ -148,7 +98,7 @@ bni_master_agent = LlmAgent(
     model=Gemini(model="gemini-2.0-flash"),
     description="Master BNI Recommendation Agent - Matches signals to BNI members.",
     instruction=SYSTEM_PROMPT,
-    tools=[get_bni_recommendations]
+    tools=[get_knowledge_base, search_google]
 )
 
 root_agent = bni_master_agent

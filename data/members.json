@@ -5,11 +5,9 @@
         "company": "Koele Design",
         "expertise": "Aannemer verbouw en renovatie",
         "triggers": [
-            "aannemer gezocht",
-            "verbouwing",
-            "uitbouw",
-            "renovatie",
-            "funderingsproblemen"
+            "\"aannemer gezocht\" OR \"wie kent een aannemer\" OR \"verbouwing plannen\"",
+            "renovatie hulp",
+            "funderingsherstel"
         ],
         "good_match_rules": [
             "particulier of MKB",
@@ -24,6 +22,43 @@
             "facebook_groups",
             "google"
         ],
+        "service_area": "Noord-Holland (Oostzaan, Zaandam, Amsterdam-Noord)",
         "intro_template": "Ik zit in een ondernemersnetwerk met Mart Koele van Koele Design. Zal ik jullie in contact brengen?"
+    },
+    {
+        "member_id": "fpoint_video",
+        "name": "Marc Anthony van Dalen",
+        "company": "F-Point",
+        "expertise": "Bedrijfsvideo en commerciële videocontent",
+        "description": "F-Point maakt professionele bedrijfsvideo’s voor marketing, employer branding en online zichtbaarheid.",
+        "triggers": [
+            "bedrijfsvideo laten maken",
+            "video voor bedrijf",
+            "promotievideo nodig",
+            "bedrijfsfilm",
+            "marketing video laten maken",
+            "video content voor website",
+            "employer branding video",
+            "video voor social media bedrijf",
+            "oproep fotograaf",
+            "(\"fotograaf\" OR \"videograaf\" OR \"filmmateriaal\") AND (\"website\" OR \"socials\" OR \"update\")",
+            "(\"Ken jij een fotograaf\" OR \"Ken jij een videograaf\")"
+        ],
+        "good_match_rules": [
+            "B2B",
+            "focus op professionele uitstraling",
+            "marketing budget beschikbaar"
+        ],
+        "bad_match_rules": [
+            "bruiloften",
+            "privé verzoeken",
+            "vloggers"
+        ],
+        "preferred_sources": [
+            "linkedin",
+            "google"
+        ],
+        "service_area": "Landelijk (Nederland)",
+        "intro_template": "Ik ken Marc Anthony van Dalen van F-Point, hij is gespecialiseerd in hoogwaardige bedrijfsvideo's. Zal ik jullie introduceren?"
     }
 ]
