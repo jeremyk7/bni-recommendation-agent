@@ -28,47 +28,54 @@ def get_knowledge_base() -> str:
 
 def search_google(query: str) -> str:
     """
-    Executes a Google Search for a specific query and returns a list of results (title + url + description).
-    Use this to find posts on LinkedIn, Facebook, or Forums.
-    
-    Args:
-        query: The search string (e.g. 'site:linkedin.com/posts "aannemer gezocht"')
+    Executes a Google Search using the official Custom Search JSON API.
+    Returns a list of results (title + url + description).
     """
-    if not search:
-        return "Error: googlesearch-python library is not installed."
+    api_key = os.getenv("SEARCH_API_KEY")
+    cse_id = os.getenv("GOOGLE_CSE_ID")
+
+    if not api_key or not cse_id:
+        return "Error: SEARCH_API_KEY or GOOGLE_CSE_ID not found in environment."
 
     import datetime
     seven_days_ago = (datetime.datetime.now() - datetime.timedelta(days=7)).strftime('%Y-%m-%d')
     query_with_date = f"{query} after:{seven_days_ago}"
     
-    print(f"DEBUG: Agent executes search query: {query_with_date}")
+    print(f"DEBUG: Agent executes Google API search query: {query_with_date}")
     
-    results = []
+    url = "https://www.googleapis.com/customsearch/v1"
+    params = {
+        "key": api_key,
+        "cx": cse_id,
+        "q": query_with_date,
+        "num": 5,
+        "hl": "nl",
+        "gl": "nl"
+    }
+
     try:
-        # Perform search with Dutch priority, time filter, and conservative sleep interval
-        search_results = search(
-            query_with_date, 
-            num_results=5, 
-            advanced=True, 
-            lang="nl", 
-            sleep_interval=5
-        ) 
+        import requests
+        response = requests.get(url, params=params)
+        response.raise_for_status()
+        search_data = response.json()
         
-        for res in search_results:
-            results.append({
-                "title": res.title,
-                "url": res.url,
-                "description": res.description
-            })
-            
+        results = []
+        if "items" in search_data:
+            for item in search_data["items"]:
+                results.append({
+                    "title": item.get("title"),
+                    "url": item.get("link"),
+                    "description": item.get("snippet")
+                })
+        
+        if not results:
+            print("DEBUG: API Search returned 0 results.")
+            return "No results found."
+
+        return json.dumps(results, indent=2)
+
     except Exception as e:
-        print(f"DEBUG: Search failed with error: {e}")
-        return f"Search failed: {e}"
-
-    if not results:
-        print("DEBUG: Search returned 0 results.")
-        return "No results found."
-
-    return json.dumps(results, indent=2)
+        print(f"DEBUG: API Search failed: {e}")
+        return f"Search API failed: {e}"
 
     return json.dumps(results, indent=2)
