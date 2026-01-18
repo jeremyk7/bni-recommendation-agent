@@ -1,0 +1,29 @@
+[
+    {
+        "member_id": "mart_koele",
+        "name": "Mart Koele",
+        "company": "Koele Design",
+        "expertise": "Aannemer verbouw en renovatie",
+        "triggers": [
+            "aannemer gezocht",
+            "verbouwing",
+            "uitbouw",
+            "renovatie",
+            "funderingsproblemen"
+        ],
+        "good_match_rules": [
+            "particulier of MKB",
+            "concrete plannen"
+        ],
+        "bad_match_rules": [
+            "grote nieuwbouw",
+            "theoretische vraag"
+        ],
+        "preferred_sources": [
+            "linkedin",
+            "facebook_groups",
+            "google"
+        ],
+        "intro_template": "Ik zit in een ondernemersnetwerk met Mart Koele van Koele Design. Zal ik jullie in contact brengen?"
+    }
+]
