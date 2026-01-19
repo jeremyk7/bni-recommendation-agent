@@ -5,60 +5,376 @@
         "company": "Koele Design",
         "expertise": "Aannemer verbouw en renovatie",
         "triggers": [
-            "\"aannemer gezocht\" OR \"wie kent een aannemer\" OR \"verbouwing plannen\"",
-            "renovatie hulp",
-            "funderingsherstel"
+            "site:facebook.com OR site:linkedin.com aannemer Noord-Holland gezocht",
+            "site:marktplaats.nl gezocht aannemer OR verbouwing",
+            "site:reddit.com OR site:tweakers.net aannemer OR verbouwing gezocht",
+            "hulp bij verbouwing aanbouw renovatie Noord-Holland"
+        ],
+        "negative_triggers": [
+            "vacature",
+            "stage",
+            "collega",
+            "marketing",
+            "trustoo"
         ],
         "good_match_rules": [
             "particulier of MKB",
             "concrete plannen"
         ],
         "bad_match_rules": [
-            "grote nieuwbouw",
-            "theoretische vraag"
+            "nieuwbouw",
+            "infra"
         ],
-        "preferred_sources": [
-            "linkedin",
-            "facebook_groups",
-            "google"
-        ],
-        "service_area": "Noord-Holland (Oostzaan, Zaandam, Amsterdam-Noord)",
+        "service_area": "Noord-Holland",
         "intro_template": "Ik zit in een ondernemersnetwerk met Mart Koele van Koele Design. Zal ik jullie in contact brengen?"
     },
     {
         "member_id": "fpoint_video",
         "name": "Marc Anthony van Dalen",
         "company": "F-Point",
-        "expertise": "Bedrijfsvideo en commerciële videocontent",
-        "description": "F-Point maakt professionele bedrijfsvideo’s voor marketing, employer branding en online zichtbaarheid.",
+        "expertise": "Bedrijfsvideo",
         "triggers": [
-            "bedrijfsvideo laten maken",
-            "video voor bedrijf",
-            "promotievideo nodig",
-            "bedrijfsfilm",
-            "marketing video laten maken",
-            "video content voor website",
-            "employer branding video",
-            "video voor social media bedrijf",
-            "oproep fotograaf",
-            "(\"fotograaf\" OR \"videograaf\" OR \"filmmateriaal\") AND (\"website\" OR \"socials\" OR \"update\")",
-            "(\"Ken jij een fotograaf\" OR \"Ken jij een videograaf\")"
+            "site:linkedin.com videograaf gezocht bedrijf OR marketing",
+            "site:instagram.com #videograafgezocht OR #bedrijfsvideo",
+            "bedrijfsvideo promotievideo laten maken",
+            "online zichtbaarheid verbeteren video marketing"
         ],
-        "good_match_rules": [
-            "B2B",
-            "focus op professionele uitstraling",
-            "marketing budget beschikbaar"
+        "negative_triggers": [
+            "trouwvideo",
+            "bruiloft",
+            "stage",
+            "vacature"
         ],
-        "bad_match_rules": [
-            "bruiloften",
-            "privé verzoeken",
-            "vloggers"
+        "service_area": "Landelijk",
+        "intro_template": "Ik ken Marc Anthony van Dalen van F-Point. Zal ik jullie introduceren?"
+    },
+    {
+        "member_id": "de_roos_hypotheek",
+        "name": "Christiaan Heijne",
+        "company": "De Roos van Renswouw",
+        "expertise": "Hypotheekadvies",
+        "triggers": [
+            "site:reddit.com/r/DutchFIRE OR site:reddit.com/r/geldzaken hypotheek OR huis kopen",
+            "ondernemer OR zzp hypotheek advies gezocht",
+            "financiering woning regelen zzp",
+            "hypotheek bij scheiding regelen"
         ],
-        "preferred_sources": [
-            "linkedin",
-            "google"
+        "negative_triggers": [
+            "rentepraat",
+            "vacature"
         ],
-        "service_area": "Landelijk (Nederland)",
-        "intro_template": "Ik ken Marc Anthony van Dalen van F-Point, hij is gespecialiseerd in hoogwaardige bedrijfsvideo's. Zal ik jullie introduceren?"
+        "service_area": "Landelijk",
+        "intro_template": "Ik werk samen met Christiaan Heijne van De Roos van Renswouw. Zal ik jullie introduceren?"
+    },
+    {
+        "member_id": "de_waal_jurist",
+        "name": "Daniëlle de Waal",
+        "company": "De Waal Jurist",
+        "expertise": "Ondernemingsrecht",
+        "triggers": [
+            "site:linkedin.com OR site:facebook.com jurist ondernemer gezocht",
+            "contract laten checken jurist OR algemene voorwaarden",
+            "conflict compagnon aandeelhoudersovereenkomst advies",
+            "bv oprichten advies nodig mkb"
+        ],
+        "negative_triggers": [
+            "strafrecht",
+            "scheiding privé"
+        ],
+        "service_area": "Landelijk",
+        "intro_template": "Ik ken Daniëlle de Waal van De Waal Jurist. Is het een idee om haar eens mee te laten kijken?"
+    },
+    {
+        "member_id": "nadisign",
+        "name": "Nadia van Ingen",
+        "company": "Nadisign",
+        "expertise": "Grafische vormgeving",
+        "triggers": [
+            "site:linkedin.com OR site:instagram.com ontwerper OR vormgever gezocht",
+            "logo vernieuwen huisstijl nodig",
+            "branding bureau mkb branding",
+            "wie kent een goede ontwerper voor logo"
+        ],
+        "negative_triggers": [
+            "hobby",
+            "studenten",
+            "gratis"
+        ],
+        "service_area": "Landelijk",
+        "intro_template": "Voor grafisch ontwerp kan ik Nadia van Ingen van Nadisign aanbevelen. Zal ik jullie aan elkaar voorstellen?"
+    },
+    {
+        "member_id": "visual_district_seo",
+        "name": "Ricardo Tavenier",
+        "company": "Visual District",
+        "expertise": "SEO specialist",
+        "triggers": [
+            "site:linkedin.com seo specialist gezocht OR vindbaarheid",
+            "beter vindbaar worden google seo hulp",
+            "meer leads via website optimalisatie",
+            "hoger in google komen hulp mkb"
+        ],
+        "negative_triggers": [
+            "social media only",
+            "vacature"
+        ],
+        "service_area": "Landelijk",
+        "intro_template": "Ricardo Tavenier van Visual District is een topper op het gebied van SEO. Zal ik een kennismaking regelen?"
+    },
+    {
+        "member_id": "molenaar_financial",
+        "name": "Fercan Molenaar",
+        "company": "Molenaar Financial Services",
+        "expertise": "Boekhouding",
+        "triggers": [
+            "site:facebook.com OR site:linkedin.com boekhouder gezocht zzp",
+            "boekhouder gezocht mkb OR administratie uitbesteden",
+            "btw aangifte hulp belasting boekhouder",
+            "wie kent een goede boekhouder amsterdam"
+        ],
+        "negative_triggers": [
+            "corporate",
+            "audit",
+            "vacature"
+        ],
+        "service_area": "Regionaal / Landelijk",
+        "intro_template": "Voor je administratie ken ik Fercan Molenaar. Zal ik jullie introduceren?"
+    },
+    {
+        "member_id": "je_adviseurs",
+        "name": "Jessica Freesen",
+        "company": "JE Adviseurs",
+        "expertise": "Belasting & bedrijfsadvies",
+        "triggers": [
+            "belastingadvies fiscaal advies ondernemer OR zzp",
+            "holding structuur opzetten bv advies",
+            "bedrijf herstructureren winst optimaliseren",
+            "fiscale optimalisatie bv structuur"
+        ],
+        "negative_triggers": [
+            "particulier zonder bedrijf",
+            "vacature"
+        ],
+        "service_area": "Landelijk",
+        "intro_template": "Jessica Freesen van JE Adviseurs is een scherpe fiscalist. Zal ik een kennismaking regelen?"
+    },
+    {
+        "member_id": "zaan_advocaten_arbeid",
+        "name": "Jaap Jong",
+        "company": "Zaan Advocaten",
+        "expertise": "Arbeidsrecht",
+        "triggers": [
+            "site:linkedin.com arbeidsrecht advocaat gezocht OR jurist",
+            "arbeidsconflict ontslag werknemer hulp",
+            "vaststellingsovereenkomst vso check jurist",
+            "juridisch advies personeel zieke werknemer"
+        ],
+        "negative_triggers": [
+            "privéconflict",
+            "burenruzie",
+            "strafrecht"
+        ],
+        "service_area": "Noord-Holland / Landelijk",
+        "intro_template": "Bij arbeidsrechtelijke vragen werk ik altijd samen met Jaap Jong. Zal ik vragen of hij contact opneemt?"
+    },
+    {
+        "member_id": "synergy_business_law",
+        "name": "Joost Le Clercq",
+        "company": "Synergy Business Lawyers",
+        "expertise": "Vastgoedrecht",
+        "triggers": [
+            "vastgoed juridisch advies koopcontract zakelijk",
+            "huurforceel zakelijk bedrijfspand OR commercieel",
+            "commerciële huur conflict recht",
+            "vastgoedbelegger juridisch hulp advies"
+        ],
+        "negative_triggers": [
+            "particuliere huur",
+            "burenruzie"
+        ],
+        "service_area": "Landelijk",
+        "intro_template": "Joost Le Clercq is gespecialiseerd in zakelijk vastgoedrecht. Zal ik jullie in contact brengen?"
+    },
+    {
+        "member_id": "steege_makelaars",
+        "name": "Ginger Lafeber",
+        "company": "Van de Steege",
+        "expertise": "Makelaar woningen",
+        "triggers": [
+            "site:facebook.com OR site:linkedin.com makelaar gezocht amsterdam",
+            "huis verkopen makelaar gezocht Noord-Holland",
+            "woning kopen aankoopmakelaar advies",
+            "waarde van mijn huis weten funda makelaar"
+        ],
+        "negative_triggers": [
+            "commercieel vastgoed",
+            "bedrijfspand"
+        ],
+        "service_area": "Noord-Holland",
+        "intro_template": "Voor de verkoop van je huis ken ik Ginger Lafeber. Zal ik jullie voorstellen?"
+    },
+    {
+        "member_id": "imor_video",
+        "name": "Rogier van de Weerd",
+        "company": "I-Mor",
+        "expertise": "Reclamevideo\u2019s",
+        "triggers": [
+            "reclamevideo promotievideo campagne maken OR commercial",
+            "commercial laten maken website online",
+            "video marketing campagne online branding",
+            "wie kent een videograaf commercials"
+        ],
+        "negative_triggers": [
+            "priv\u00e9video",
+            "trouwvideo",
+            "vacature"
+        ],
+        "service_area": "Landelijk",
+        "intro_template": "Rogier van de Weerd van I-Mor maakt fantastische reclamevideo's. Zal ik vragen of hij meedenkt?"
+    },
+    {
+        "member_id": "ap_productions",
+        "name": "Monique Dekker",
+        "company": "AP Productions",
+        "expertise": "Promotieartikelen",
+        "triggers": [
+            "relatiegeschenk promotieartikelen logo bedrukken",
+            "merchandise bedrijf beursmateriaal nodig",
+            "bedrijfskleding logo bedrukken personeel",
+            "kerstpakket cadeau personeel relatiegeschenk"
+        ],
+        "negative_triggers": [
+            "priv\u00e9bestellingen",
+            "cadeautje"
+        ],
+        "service_area": "Landelijk",
+        "intro_template": "Monique Dekker heeft altijd de beste idee\u00ebn voor promotieartikelen. Zal ik jullie koppelen?"
+    },
+    {
+        "member_id": "wolde_tuinontwerp",
+        "name": "Annette de Wolde",
+        "company": "De Wolde Tuinontwerp",
+        "expertise": "Tuinontwerp & beplanting",
+        "triggers": [
+            "site:facebook.com OR site:instagram.com tuinontwerp herzien",
+            "beplantingsplan tuinarchitect gezocht OR ontwerper",
+            "buitenruimte kantoor inrichten tuin",
+            "wie kent een goede tuinontwerper"
+        ],
+        "negative_triggers": [
+            "gemeentelijk park",
+            "openbaar groen"
+        ],
+        "service_area": "Regionaal / Landelijk",
+        "intro_template": "Annette de Wolde maakt prachtige tuinontwerpen. Zal ik jullie met elkaar in contact brengen?"
+    },
+    {
+        "member_id": "onearmed_productions",
+        "name": "Alex Wegman",
+        "company": "OneArmed Productions",
+        "expertise": "Audio & muziekproductie",
+        "triggers": [
+            "audioproductie podcast opnemen hulp OR studio",
+            "sound design video voice-over nodig",
+            "muziek onder video audio sound design",
+            "luisterboek laten opnemen voice-over"
+        ],
+        "negative_triggers": [
+            "hobbyproject",
+            "vrijwilligers"
+        ],
+        "service_area": "Landelijk",
+        "intro_template": "Voor audio of podcasts moet je bij Alex Wegman zijn. Zal ik jullie introduceren?"
+    },
+    {
+        "member_id": "gastvrijbedrijf_training",
+        "name": "Janet Tromp",
+        "company": "Gastvrijbedrijf",
+        "expertise": "Training & communicatie",
+        "triggers": [
+            "klantgerichtheid communicatie training personeel OR mkb",
+            "hospitality gastvrijheid werkvloer training",
+            "training klantenservice mkb nodig",
+            "verbeteren klantinteractie training personeel"
+        ],
+        "negative_triggers": [
+            "individuele coaching priv\u00e9",
+            "life coach"
+        ],
+        "service_area": "Landelijk",
+        "intro_template": "Janet Tromp helpt organisaties met klantvriendelijkheid. Zal ik een kennismaking regelen?"
+    },
+    {
+        "member_id": "nathalie_brendel_hypno",
+        "name": "Nathalie Brendel",
+        "company": "Nathalie Brendel",
+        "expertise": "Hypnotherapie",
+        "triggers": [
+            "stress verminderen hypnose therapie OR burn-out",
+            "persoonlijke blokkades doorbreken angsten coaching",
+            "burn-out voorkomen hypnotherapeut",
+            "stoppen met roken hypnose hulp"
+        ],
+        "negative_triggers": [
+            "medisch",
+            "ziekenhuiszorg"
+        ],
+        "service_area": "Noord-Holland",
+        "intro_template": "Zij is een kundig hypnotherapeut. Zal ik jullie met elkaar laten kennismaken?"
+    },
+    {
+        "member_id": "engel_bouw_advies",
+        "name": "Ronald Engel",
+        "company": "Engel Bouw & Advies",
+        "expertise": "Aannemer nieuwbouw/fundering",
+        "triggers": [
+            "funderingsherstel specialist funderingsonderzoek OR herstel",
+            "plannen nieuwbouw bouwadvies woning OR fundering",
+            "kelder laten bouwen onder huis fundering",
+            "wie weet veel van funderingen"
+        ],
+        "negative_triggers": [
+            "overheid",
+            "station",
+            "infra"
+        ],
+        "service_area": "Noord-Holland / Landelijk",
+        "intro_template": "Bij complexe funderingsvragen adviseer ik Ronald Engel. Zal ik hem vragen mee te kijken?"
+    },
+    {
+        "member_id": "e_formapp",
+        "name": "Rutger de Bruin",
+        "company": "E-formapp",
+        "expertise": "Digitale formulieren",
+        "triggers": [
+            "formulieren digitaliseren papierloos werken OR proces",
+            "proces automatiseren digitale inspectie app OR papierloos",
+            "werkbonnen digitaliseren mkb hulp software",
+            "nooit meer papieren bonnen digitalisering"
+        ],
+        "negative_triggers": [
+            "enterprise IT",
+            "grote infra"
+        ],
+        "service_area": "Landelijk",
+        "intro_template": "Rutger de Bruin helpt bedrijven digitaliseren. Zal ik vragen of hij een demo geeft?"
+    },
+    {
+        "member_id": "spanbroker_credit",
+        "name": "Meri Nasole",
+        "company": "The SpanBroker",
+        "expertise": "Credit management",
+        "triggers": [
+            "facturen niet betaald incasso hulp OR debiteuren",
+            "betalingsproblemen debiteurenbeheer mkb OR incasso",
+            "onbetaalde rekeningen incassobureau ondernemer",
+            "wie kent een goed incassobureau B2B"
+        ],
+        "negative_triggers": [
+            "incasso particulieren",
+            "burenruzie"
+        ],
+        "service_area": "Landelijk",
+        "intro_template": "Meri Nasole is zeer kundig op het gebied van incasso. Zal ik jullie in contact brengen?"
     }
 ]
